@@ -1,6 +1,6 @@
 import  { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { AiOutlineMenu, AiOutlineClose, AiOutlineBell } from 'react-icons/ai'; // Import icons
+import {    Link } from 'react-router-dom';
+import { AiOutlineMenu, AiOutlineClose } from 'react-icons/ai'; // Import icons
 
 // Anda mungkin ingin mendefinisikan interface untuk struktur notifikasi
 // interface NotificationItem {
@@ -11,7 +11,6 @@ import { AiOutlineMenu, AiOutlineClose, AiOutlineBell } from 'react-icons/ai'; /
 // }
 
 const NotoficationPage: React.FC = () => { // Nama komponen menggunakan typo sesuai folder path
-  const navigate = useNavigate();
   // State for mobile menu
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 

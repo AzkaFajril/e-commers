@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { AiOutlineMenu, AiOutlineClose, AiOutlineUser, AiOutlineLogin, AiOutlineUserAdd, AiOutlineShoppingCart, AiOutlineSetting } from 'react-icons/ai';
+import { AiOutlineMenu, AiOutlineClose} from 'react-icons/ai';
 
 interface ProductForm {
   name: string;

@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { AiOutlineMenu, AiOutlineClose } from 'react-icons/ai'; // Import icons for header
 
 const Mail: React.FC = () => {
-  const navigate = useNavigate();
   // State for mobile menu
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 

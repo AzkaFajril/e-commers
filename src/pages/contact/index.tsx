@@ -1,29 +1,23 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom'; // Import Link for header navigation
-import { AiOutlineMenu, AiOutlineClose, AiOutlineSend, AiOutlineCheckCircle, AiOutlineWarning, AiOutlineLoading } from 'react-icons/ai'; // Import icons
+import {Link } from 'react-router-dom';
+import { AiOutlineMenu, AiOutlineClose, AiOutlineSend, AiOutlineCheckCircle, AiOutlineWarning, AiOutlineLoading } from 'react-icons/ai';
 
 const Contact: React.FC = () => {
-  const navigate = useNavigate();
-  // State untuk form kontak
   const [contactFormData, setContactFormData] = useState({
     name: '',
     email: '',
     message: ''
   });
-  // State untuk status pengiriman form
   const [contactStatus, setContactStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [contactError, setContactError] = useState<string | null>(null);
-  // State for mobile menu
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // Ganti dengan URL Webhook Discord Anda yang sebenarnya!
-  // Cara membuat webhook: Server Settings -> Integrations -> Create Webhook
-  const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1377511994709512202/Qix9LzzTXuUBGctJkdaN-jV2pcCJVEpENHJdS_UA6x1H3Mz26U17JxSDv8DAGu0wNxnP'; // <-- GANTI INI!
+  // Webhook URL langsung di sini
+  const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1377511994709512202/Qix9LzzTXuUBGctJkdaN-jV2pcCJVEpENHJdS_UA6x1H3Mz26U17JxSDv8DAGu0wNxnP';
 
   const handleContactChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setContactFormData(prev => ({ ...prev, [name]: value }));
-    // Reset status dan error saat user mulai mengetik lagi
     if (contactStatus !== 'idle') {
       setContactStatus('idle');
       setContactError(null);
@@ -31,21 +25,18 @@ const Contact: React.FC = () => {
   };
 
   const sendToDiscordWebhook = async (data: { name: string; email: string; message: string }) => {
-    if (DISCORD_WEBHOOK_URL === 'https://discord.com/api/webhooks/1377511453359083520/S0UrENu20XJUvJxpJBp3U9m1mBsbKNEzdET_Kk-V12buLnkq6MXb3EcDZdlHrfWgkyPk') {
-      setContactStatus('error');
-      setContactError('Discord Webhook URL is not configured. Please replace YOUR_DISCORD_WEBHOOK_URL with your actual webhook URL.');
-      console.error('Discord Webhook URL is not configured.');
-      return;
-    }
-
     setContactStatus('loading');
     setContactError(null);
 
-    // Payload sederhana untuk Discord webhook
+    const sanitizedData = {
+      name: data.name.replace(/[<>]/g, ''),
+      email: data.email.replace(/[<>]/g, ''),
+      message: data.message.replace(/[<>]/g, '')
+    };
+
     const discordPayload = {
-      content: `**New Contact Form Submission**\n\n**Name:** ${data.name}\n**Email:** ${data.email}\n**Message:**\n${data.message}`,
-      username: 'Contact Bot', // Nama bot di Discord
-      // avatar_url: 'URL_AVATAR_BOT_ANDA' // Opsional: URL gambar avatar bot
+      content: `**New Contact Form Submission**\n\n**Name:** ${sanitizedData.name}\n**Email:** ${sanitizedData.email}\n**Message:**\n${sanitizedData.message}`,
+      username: 'Contact Bot',
     };
 
     try {
@@ -57,42 +48,39 @@ const Contact: React.FC = () => {
         body: JSON.stringify(discordPayload),
       });
 
-      // Discord webhook biasanya mengembalikan status 204 jika sukses
       if (response.ok || response.status === 204) {
         setContactStatus('success');
-        setContactFormData({ name: '', email: '', message: '' }); // Reset form
+        setContactFormData({ name: '', email: '', message: '' });
       } else {
-        // Jika respon tidak OK, coba baca error dari body jika ada
-        const errorText = await response.text();
-        console.error('Discord webhook failed:', response.status, errorText);
-        setContactStatus('error');
-        setContactError(`Failed to send message. Status: ${response.status}. ${errorText}`);
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
     } catch (error: any) {
-      console.error('Error sending to Discord webhook:', error);
+      console.error('Error sending to webhook:', error);
       setContactStatus('error');
-      setContactError(`An error occurred: ${error.message}`);
+      setContactError('Failed to send message. Please try again later.');
     }
   };
 
   const handleContactSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Basic client-side validation
-    if (!contactFormData.name || !contactFormData.email || !contactFormData.message) {
+    if (!contactFormData.name.trim() || !contactFormData.email.trim() || !contactFormData.message.trim()) {
       setContactStatus('error');
       setContactError('Please fill in all fields.');
       return;
     }
 
-    // Validasi format email sederhana
-    if (!/\S+@\S+\.\S+/.test(contactFormData.email)) {
-        setContactStatus('error');
-        setContactError('Please enter a valid email address.');
-        return;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(contactFormData.email)) {
+      setContactStatus('error');
+      setContactError('Please enter a valid email address.');
+      return;
     }
 
-    // Kirim data ke Discord webhook
+    if (contactStatus === 'loading') {
+      return;
+    }
+
     sendToDiscordWebhook(contactFormData);
   };
 
